@@ -17,25 +17,46 @@ Tool CPU Sim 4.0.11 (Java 8 with JavaFX)
 <img width="1241" height="1061" alt="image" src="https://github.com/user-attachments/assets/5b042690-8d35-4ee9-b444-90ad9aba9b7f" />
 
 ## Creating the microinstructions
-### TransferRtoR:
+## TransferRtoR:
+
 <img width="883" height="698" alt="image" src="https://github.com/user-attachments/assets/e7ed16c4-9b4f-4268-af83-da107f8f473b" />
-### MemoryAccess:
+
+## MemoryAccess:
+
 <img width="787" height="677" alt="image" src="https://github.com/user-attachments/assets/5a5f1554-7ccb-493e-ae6b-26028371044e" />
-### Increment:
+
+## Increment:
+
 <img width="1006" height="767" alt="image" src="https://github.com/user-attachments/assets/5d77b1a6-a7f9-4fe9-85fb-acaa74efccc0" />
-### Arithmetic:
+
+## Arithmetic:
+
 <img width="696" height="627" alt="image" src="https://github.com/user-attachments/assets/d41b4d10-3303-4049-acba-fc2f01af673d" />
-### Logical:
+
+## Logical:
+
 <img width="868" height="746" alt="image" src="https://github.com/user-attachments/assets/2ae3d416-5d78-4aba-b2d0-ef44649b721a" />
-### Shift:
+
+## Shift:
+
 <img width="1178" height="898" alt="image" src="https://github.com/user-attachments/assets/a889d384-a5f5-4ccb-a34c-4fcb4e6a924e" />
-### Set:
+
+## Set:
+
 <img width="1133" height="832" alt="image" src="https://github.com/user-attachments/assets/6fd9076b-3296-4daf-bd74-4ebf6cc84228" />
-### Test
+
+## Test:
+
 <img width="822" height="737" alt="image" src="https://github.com/user-attachments/assets/6569b1b7-8d7e-4640-be60-82a59e1b042c" />
-### Decode
+
+## Decode:
+
 <img width="870" height="783" alt="image" src="https://github.com/user-attachments/assets/5f8e223a-0f2e-4fa2-8296-cae69e69c19f" />
-### SetCondBit
+
+## SetCondBit:
+
 <img width="1020" height="826" alt="image" src="https://github.com/user-attachments/assets/80e5ab67-5197-44cb-8690-e0c7166aaf57" />
-### IO
+
+## IO:
+
 <img width="1291" height="885" alt="image" src="https://github.com/user-attachments/assets/4dffeffc-2e1a-4ce9-9774-68e3390d300c" />
