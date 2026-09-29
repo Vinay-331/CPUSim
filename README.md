@@ -1,4 +1,4 @@
-<img width="993" height="507" alt="image" src="https://github.com/user-attachments/assets/010a2a05-89e7-4578-8bd9-c8bff0b2e701" /># CSA CPUSim Practical
+# CSA CPUSim Practical
 # Practical 1: Create a Machine (Basic Computer Architecture)
 Aim-> To create, in CPU Sim, a machine based on the Basic Computer architecture: its registers,
 memory, microinstructions, instruction fields and machine instructions.
@@ -112,11 +112,11 @@ Tool->  CPU Sim 4.0.11 (Java 8 with JavaFX)
 ## Theory
 Every instruction cycle begins with the same fetch and decode phase. In Mano's Basic Computer it takes
 three clock pulses, controlled by the sequence counter outputs T0, T1 and T2
-```
+
 T0 : AR <- PC
 T1 : IR <- M[AR], PC <- PC + 1
 T2 : D0 ... D7 <- Decode IR(12-14), AR <- IR(0-11), I <- IR(15)
-```
+
 ## Creating fetch sequence instructions:
 
 <img width="1217" height="988" alt="image" src="https://github.com/user-attachments/assets/e1e1689f-7e73-459a-a98c-3780d58a7037" />
@@ -158,10 +158,26 @@ Tool-> CPU Sim 4.0.11 (Java 8 with JavaFX)
 INP reads an integer into AC. STA A saves it in memory because the next INP overwrites AC. ADD A is a memory-reference instruction: DR ← M[A], then AC ← AC + DR and the carry out of bit 15 goes to E. OUT displays AC and HLT stops the machine.
 Numbers are 16-bit two's complement, so the range is −32768 to +32767
 
-The program that we will be using:
-<img width="993" height="507" alt="image" src="https://github.com/user-attachments/assets/fdb4a801-9370-4fe3-a389-042dff11180d" />
+## Program
 
-## After assembling and loading (Ctrl+2)
+```
+; ==============================================================
+; Practical 3 : ADD operation on two user-entered numbers
+; Machine : BasicComputer.cpu (Mano's Basic Computer)
+; Logic : SUM = A + B
+; ==============================================================
+ INP ; AC <- first number typed by the user
+ STA A ; M[A] <- AC (save first number)
+ INP ; AC <- second number
+ ADD A ; AC <- AC + M[A], E <- carry out
+ STA SUM ; M[SUM] <- AC (save the result)
+ OUT ; display AC (the sum)
+ HLT ; stop
+A: .data 1 0 ; first number
+SUM: .data 1 0 ; result
+```
+
+## After assembling and loading
 
 <img width="1917" height="1198" alt="image" src="https://github.com/user-attachments/assets/7b4a6cf8-a7ba-499c-a64e-ff0acdf40b99" />
 
@@ -182,3 +198,235 @@ After giving second input:
 ## Result
 
 The output is correct, program takes the input, stores the input, adds the numbers and displays the sum correctly. 
+
+# Practical 4: SUBTRACT Operation on Two User-entered Numbers
+
+Aim-> To write an assembly program that reads two numbers A and B and displays A − B.
+Tool-> CPU Sim 4.0.11 (Java 8 with JavaFX)
+
+## Theory
+The Basic Computer has no subtract instruction. Subtraction uses the two's complement: A − B = A + (B′ + 1).
+CMA forms the 1's complement B′ and INC adds 1, giving −B, which is then added to A with ADD.
+
+## Program
+
+```
+; ==============================================================
+; Practical 4 : SUBTRACT operation on two user-entered numbers
+; Machine : BasicComputer.cpu (Mano's Basic Computer)
+; Logic : DIFF = A - B = A + (2's complement of B)
+; 2's complement of B = B' + 1 (CMA, then INC)
+; ==============================================================
+ INP ; AC <- A (minuend)
+ STA A ; M[A] <- AC
+ INP ; AC <- B (subtrahend)
+ CMA ; AC <- AC' (1's complement of B)
+ INC ; AC <- AC + 1 (2's complement of B = -B)
+ ADD A ; AC <- A + (-B) = A - B
+ STA DIFF ; M[DIFF] <- AC
+ OUT ; display the difference
+ HLT
+A: .data 1 0 ; minuend
+DIFF: .data 1 0 ; result
+```
+
+## After assembling and loading the program
+
+<img width="1917" height="1198" alt="image" src="https://github.com/user-attachments/assets/6a4023ce-a034-48f6-a377-3393438c79cb" />
+
+## Output after running the program and entering both numbers
+
+<img width="673" height="247" alt="image" src="https://github.com/user-attachments/assets/d7944285-ffa0-400e-acae-2686cb1e1231" />
+
+## Result
+
+The output is correct, program takes the input, stores the input, subtracts the numbers using 2's complement method and displays the difference correctly. 
+
+# Practical 5: Logical Operations: AND, OR, NOT, XOR, NOR, NAND
+
+Aim To write an assembly program that performs AND, OR, NOT, XOR, NOR and NAND on two userentered numbers.
+Tool CPU Sim 4.0.11 (Java 8 with JavaFX)
+
+## Theory 
+The Basic Computer provides only two logic instructions: AND (memory-reference, AC ← AC ∧ M[addr]) and CMA (register-reference, AC ← AC′). Since {AND, NOT} is functionally complete, every other operation can be built from them with Boolean algebra, applied to all 16 bits at once:
+
+| Operation | Boolean identity used | Instruction sequence |
+| :--- | :--- | :--- |
+| A AND B | A·B | LDA A, AND B |
+| A OR B | (A′·B′)′ (De Morgan) | LDA B, CMA, STA NB, LDA A, CMA, AND NB, CMA |
+| NOT A | A′ | LDA A, CMA |
+| A XOR B | (A + B)·(A·B)′ | LDA RAND, CMA, AND ROR |
+| A NOR B | (A + B)′ | LDA ROR, CMA |
+| A NAND B | (A·B)′ | LDA RAND, CMA |
+
+## Program
+
+```
+; ==============================================================
+; Practical 5 : Logical operations AND, OR, NOT, XOR, NOR, NAND
+; on two user-entered numbers A and B
+; Machine : BasicComputer.cpu (Mano's Basic Computer)
+;
+; The Basic Computer has only two logic instructions:
+; AND (memory-reference) AC <- AC ^ M[addr]
+; CMA (register-reference) AC <- AC'
+; AND + NOT is a functionally complete set, so every other
+; operation is built from them with Boolean algebra:
+; NAND = (A.B)'
+; OR = (A'.B')' (De Morgan)
+; NOR = (A + B)'
+; XOR = (A + B) . (A.B)'
+; Outputs appear in this order: AND, OR, NOT A, NOT B, XOR, NOR, NAND
+; ==============================================================
+ INP ; AC <- A
+ STA A
+ INP ; AC <- B
+ STA B
+; ---------- AND = A . B ----------------------------------------
+ LDA A ; AC <- A
+ AND B ; AC <- A . B
+ STA RAND
+ OUT ; output 1 : A AND B
+; ---------- OR = (A' . B')' ------------------------------------
+ LDA B
+ CMA ; AC <- B'
+ STA NB ; NB <- B'
+ LDA A
+ CMA ; AC <- A'
+ STA NA ; NA <- A'
+Computer System Architecture – CPU Sim Lab Manual
+Page 30
+ AND NB ; AC <- A' . B'
+ CMA ; AC <- (A' . B')' = A + B
+ STA ROR
+ OUT ; output 2 : A OR B
+; ---------- NOT A, NOT B ---------------------------------------
+ LDA NA
+ OUT ; output 3 : NOT A
+ LDA NB
+ OUT ; output 4 : NOT B
+; ---------- XOR = (A + B) . (A . B)' ---------------------------
+ LDA RAND
+ CMA ; AC <- (A . B)' = NAND
+ STA RNAND
+ AND ROR ; AC <- (A + B) . (A . B)'
+ STA RXOR
+ OUT ; output 5 : A XOR B
+; ---------- NOR = (A + B)' -------------------------------------
+ LDA ROR
+ CMA ; AC <- (A + B)'
+ STA RNOR
+ OUT ; output 6 : A NOR B
+; ---------- NAND = (A . B)' ------------------------------------
+ LDA RNAND
+ OUT ; output 7 : A NAND B
+ HLT
+A: .data 1 0
+B: .data 1 0
+NA: .data 1 0 ; A'
+NB: .data 1 0 ; B'
+RAND: .data 1 0 ; A AND B
+ROR: .data 1 0 ; A OR B
+RXOR: .data 1 0 ; A XOR B
+RNOR: .data 1 0 ; A NOR B
+RNAND: .data 1 0 ; A NAND B
+```
+
+## After assembling and loading the program
+
+<img width="1917" height="1198" alt="image" src="https://github.com/user-attachments/assets/f305caea-002c-4b1b-bbcc-975fde6af4e7" />
+
+## Output after running the program and entering both numbers
+
+<img width="736" height="320" alt="image" src="https://github.com/user-attachments/assets/4a0a3378-54b1-4daa-b46f-1bb89c57a593" />
+
+## Result
+
+The program runs and takes both inputs correctly and stores them, All six logical operations were simulated using only AND and CMA. For A = 12 and B = 10 the outputs are AND = 8, OR = 14, NOT A = −13, NOT B = −11, XOR = 6, NOR = −15, NAND = −9
+
+# Practical 6: Memory-reference Instructions: ADD, LDA, STA, BUN, ISZ
+
+Aim-> To write an assembly program that simulates the memory-reference instructions ADD,LDA,STA, BUN and ISZ.
+Tool-> CPU Sim 4.0.11 (Java 8 with JavaFX)
+
+## Theory
+A memory-reference instruction has an opcode 0–6 and a 12-bit address. During fetch AR ← IR(0–11), so at T4 onwards AR holds the address of the operand (the effective address, since I = 0).
+
+| Symbol | Code | Execute micro-operations |
+| :--- | :--- | :--- |
+| ADD | 1xxx | DR ← M[AR]; AC ← AC + DR, E ← Cout |
+| LDA | 2xxx | DR ← M[AR]; AC ← DR |
+| STA | 3xxx | M[AR] ← AC |
+| BUN | 4xxx | PC ← AR |
+| ISZ | 6xxx | DR ← M[AR]; DR ← DR + 1; M[AR] ← DR; if DR = 0 then PC ← PC + 1 |
+
+## Program
+
+```
+; ==============================================================
+; Practical 6 : Memory-reference instructions ADD, LDA, STA, BUN, ISZ
+; Machine : BasicComputer.cpu (Mano's Basic Computer)
+;
+; Task : multiply X by N using repeated addition.
+; PROD = X + X + ... + X (N times)
+; CTR holds -N; ISZ adds 1 to it on every pass and
+; skips the BUN when it reaches 0, ending the loop.
+; Data : X = 5, N = 3 (CTR = -3) -> PROD = 15
+; ==============================================================
+LOOP: LDA PROD ; AC <- M[PROD]
+ ADD X ; AC <- AC + M[X]
+ STA PROD ; M[PROD] <- AC
+ ISZ CTR ; M[CTR] <- M[CTR] + 1; skip next if it became 0
+ BUN LOOP ; PC <- LOOP (repeat)
+ LDA PROD ; AC <- final product
+ HLT
+X: .data 1 5 ; multiplicand
+CTR: .data 1 -3 ; -N (loop counter)
+PROD: .data 1 0 ; product
+```
+
+## After assembling and loading the program
+
+<img width="1917" height="1198" alt="image" src="https://github.com/user-attachments/assets/e5f7a1f8-e351-4e0b-902f-eacb95fb29c3" />
+
+## After step 4 in debug mode:
+
+<img width="588" height="512" alt="image" src="https://github.com/user-attachments/assets/66a1390b-c93e-48e8-a70c-4176fcf1efc3" />
+
+## After step 5:
+
+<img width="592" height="410" alt="image" src="https://github.com/user-attachments/assets/5e60c1aa-518d-4e73-ac88-ada79321303f" />
+
+## After step 14:
+
+<img width="573" height="431" alt="image" src="https://github.com/user-attachments/assets/17a82386-9a9d-48fc-af87-94c32fcc6c86" />
+
+## After step 16:
+
+<img width="686" height="807" alt="image" src="https://github.com/user-attachments/assets/3d07edbe-11d4-4e22-bc21-5cb88d092118" />
+
+## Result
+
+| Step | PC before | Instruction | IR (hex) | AC | DR | E | PC | AR | IR (dec) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 | 0 | LDA PROD | 2009 | 0 | 0 | 0 | 1 | 9 | 8201 |
+| 2 | 1 | ADD X | 1007 | 5 | 5 | 0 | 2 | 7 | 4103 |
+| 3 | 2 | STA PROD | 3009 | 5 | 5 | 0 | 3 | 9 | 12297 |
+| 4 | 3 | ISZ CTR | 6008 | 5 | 65534 (-2) | 0 | 4 | 8 | 24584 |
+| 5 | 4 | BUN LOOP | 4000 | 5 | 65534 (-2) | 0 | 0 | 0 | 16384 |
+| 6 | 0 | LDA PROD | 2009 | 5 | 5 | 0 | 1 | 9 | 8201 |
+| 7 | 1 | ADD X | 1007 | 10 | 5 | 0 | 2 | 7 | 4103 |
+| 8 | 2 | STA PROD | 3009 | 10 | 5 | 0 | 3 | 9 | 12297 |
+| 9 | 3 | ISZ CTR | 6008 | 10 | 65535 (-1) | 0 | 4 | 8 | 24584 |
+| 10 | 4 | BUN LOOP | 4000 | 10 | 65535 (-1) | 0 | 0 | 0 | 16384 |
+| 11 | 0 | LDA PROD | 2009 | 10 | 10 | 0 | 1 | 9 | 8201 |
+| 12 | 1 | ADD X | 1007 | 15 | 5 | 0 | 2 | 7 | 4103 |
+| 13 | 2 | STA PROD | 3009 | 15 | 5 | 0 | 3 | 9 | 12297 |
+| 14 | 3 | ISZ CTR | 6008 | 15 | 0 | 0 | 5 | 8 | 24584 |
+| 15 | 5 | LDA PROD | 2009 | 15 | 15 | 0 | 6 | 9 | 8201 |
+| 16 | 6 | HLT | 7001 | 15 | 15 | 0 | 7 | 1 | 28673 |
+
+The memory-reference instructions were simulated: LDA, ADD and STA computed the running product, ISZ counted the passes and skipped the branch when the counter reached zero, and BUN formed the loop.
+Final AC = PROD = 15.
+
+# Practical 7: Register-reference Instructions: CLA, CMA, CME, HLT
