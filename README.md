@@ -1,11 +1,28 @@
 # CSA CPUSim Practical
-## Practical 1: Create a Machine (Basic Computer Architecture)
-Aim To create, in CPU Sim, a machine based on the Basic Computer architecture: its registers,
+# Practical 1: Create a Machine (Basic Computer Architecture)
+Aim-> To create, in CPU Sim, a machine based on the Basic Computer architecture: its registers,
 memory, microinstructions, instruction fields and machine instructions.
-Tool CPU Sim 4.0.11 (Java 8 with JavaFX)
+Tool-> CPU Sim 4.0.11 (Java 8 with JavaFX)
 
+## Theory
+
+A CPU Sim machine is described at the register-transfer level by four kinds of objects:
+
+
+| Object | Meaning | Dialog |
+| :--- | :--- | :--- |
+| Hardware modules | Registers, condition bits (single bits that can halt the machine or record a carry) and RAM. | Modify → Hardware Modules (Ctrl+K) |
+| Microinstructions | Elementary register-transfer operations such as PC -> AR, M[AR] -> DR, AC+DR -> AC, a test-and-skip or a decode. | Modify → Microinstructions (Ctrl+Shift+M) |
+| Fetch sequence | The microinstructions executed at the start of every instruction cycle (Practical 2). | Modify → Fetch Sequence (Ctrl+Y) |
+| Machine instructions | A name, an opcode, a format built from fields and an **execute sequence** of microinstructions ending with **End**. | Modify → Machine Instructions (Ctrl+M) |
+
+A control unit that runs a stored list of microinstructions for each instruction is a microprogrammed control
+unit, which is exactly what CPU Sim simulates.
 ## Creating a new machine
+
 <img width="590" height="400" alt="image" src="https://github.com/user-attachments/assets/e0ab6717-b7ce-4161-aac1-74781c734f67" />
+
+
 
 ## Creating the registers
 <img width="1462" height="936" alt="image" src="https://github.com/user-attachments/assets/548a15f5-d2a9-4648-aa7b-833c1d97fbe4" />
@@ -77,3 +94,16 @@ Tool CPU Sim 4.0.11 (Java 8 with JavaFX)
 ## Execute sequence of ISZ
 
 <img width="1035" height="883" alt="image" src="https://github.com/user-attachments/assets/5b6ad727-8824-4568-9b10-23eaa8b1c532" />
+ 
+Now, we will move onto practical 2, in which there is creation of Fetch sequence, program counter and saving and after that our basic computer will be completed and we can save our machine as BasicComputer.cpu
+
+# Practical 2: Create the Fetch Routine of the Instruction Cycle
+Aim-> To create the fetch (and decode) routine of the instruction cycle and observe it one microinstruction at a time.
+Tool->  CPU Sim 4.0.11 (Java 8 with JavaFX)
+
+## Theory
+Every instruction cycle begins with the same fetch and decode phase. In Mano's Basic Computer it takes
+three clock pulses, controlled by the sequence counter outputs T0, T1 and T2
+>T0 : AR <- PC
+>T1 : IR <- M[AR], PC <- PC + 1
+>T2 : D0 ... D7 <- Decode IR(12-14), AR <- IR(0-11), I <- IR(15)
