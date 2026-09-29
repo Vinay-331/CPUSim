@@ -501,3 +501,237 @@ NUM: .data 1 25
 After execution: AC = 65535 (−1), E = 1, PC = 5, AR = 1, IR = 28673.
 
 # Practical 8: Register-reference Instructions: INC, SPA, SNA, SZE
+
+Aim-> To simulate INC, SPA, SNA and SZE and determine AC, E, PC, AR and IR in decimal after execution.
+Tool-> CPU Sim 4.0.11 (Java 8 with JavaFX)
+
+## Theory
+
+A skip instruction increments PC once more when its condition is true, so the next instruction is not executed. In the program every skip instruction is followed by a HLT “trap”: the program reaches its last instruction only if every skip works. AC starts at −2 so that both a negative and a non-negative value are tested.
+
+## Program
+
+```
+; ==============================================================
+; Practical 8 : Register-reference instructions INC, SPA, SNA, SZE
+; Machine : BasicComputer.cpu (Mano's Basic Computer)
+; A skip instruction adds 1 to PC when its condition is true, so
+; the instruction after it is NOT executed. Each HLT below is a
+; "trap": the program only reaches the final HLT if every skip works.
+; ==============================================================
+ LDA NUM ; set-up: AC <- -2
+ INC ; 7020 : AC <- AC + 1 (-2 -> -1)
+ SNA ; 7008 : AC < 0 (negative) -> skip next
+ HLT ; (skipped)
+ INC ; 7020 : AC <- AC + 1 (-1 -> 0)
+ SPA ; 7010 : AC(15) = 0 (positive) -> skip next
+ HLT ; (skipped)
+ SZE ; 7002 : E = 0 -> skip next
+ HLT ; (skipped)
+ INC ; 7020 : AC <- AC + 1 (0 -> 1)
+ HLT ; 7001 : halt
+NUM: .data 1 -2
+```
+
+## After assembling and loading
+
+<img width="1917" height="1198" alt="image" src="https://github.com/user-attachments/assets/16fe6237-5ed1-4796-bcca-4bf45fbece58" />
+
+## After step 1:
+
+<img width="905" height="642" alt="image" src="https://github.com/user-attachments/assets/840ec8e2-7441-481d-ae11-ff46a77e66bc" />
+
+## After step 2:
+
+<img width="772" height="607" alt="image" src="https://github.com/user-attachments/assets/156e8c69-17f2-4d04-825e-0c3716e1881c" />
+
+## After step 3:
+
+<img width="807" height="681" alt="image" src="https://github.com/user-attachments/assets/ed1b70e0-5140-439e-ac77-6702a7579447" />
+
+## After step 4:
+
+<img width="790" height="680" alt="image" src="https://github.com/user-attachments/assets/0af461ec-3a6f-4b9a-a828-38f5aed2ca00" />
+
+## After step 5:
+
+<img width="898" height="775" alt="image" src="https://github.com/user-attachments/assets/62cdb0f1-0dec-4aba-998b-8c09c43855b8" />
+
+## After step 6:
+
+<img width="831" height="677" alt="image" src="https://github.com/user-attachments/assets/d96a689d-97f8-4445-9ff9-0f02fcb00f57" />
+
+## After step 7:
+
+<img width="765" height="737" alt="image" src="https://github.com/user-attachments/assets/40ca36f2-597d-4568-a5a0-3f1b3b22276d" />
+
+## After step 8:
+
+<img width="721" height="875" alt="image" src="https://github.com/user-attachments/assets/e9d912a7-37c8-4b3d-b680-8f5602cf2e52" />
+
+## Result
+
+| Step | PC before | Instruction | IR (hex) | AC | E | PC | AR | IR (dec) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 | 0 | LDA NUM | 200B | 65534 (-2) | 0 | 1 | 11 | 8203 |
+| 2 | 1 | INC | 7020 | 65535 (-1) | 0 | 2 | 32 | 28704 |
+| 3 | 2 | SNA | 7008 | 65535 (-1) | 0 | 4 | 8 | 28680 |
+| 4 | 4 | INC | 7020 | 0 | 0 | 5 | 32 | 28704 |
+| 5 | 5 | SPA | 7010 | 0 | 0 | 7 | 16 | 28688 |
+| 6 | 7 | SZE | 7002 | 0 | 0 | 9 | 2 | 28674 |
+| 7 | 9 | INC | 7020 | 1 | 0 | 10 | 32 | 28704 |
+| 8 | 10 | HLT | 7001 | 1 | 0 | 11 | 1 | 28673 |
+
+INC, SPA, SNA and SZE were simulated and every skip was verified. After execution: AC = 1, E = 0, PC = 11, AR = 1, IR = 28673.
+
+# Practical 9: Register-reference Instructions: CIR, CIL
+
+Aim-> To simulate CIR and CIL and determine AC, E, PC, AR and IR in decimal after execution.
+Tool-> CPU Sim 4.0.11 (Java 8 with JavaFX)
+
+## Theory
+CIR and CIL circulate (rotate) the 17-bit combination of E and AC by one position:
+
+CIR (7080): E -> AC(15) -> AC(14) -> ... -> AC(0) -> E (rotate right)
+CIL (7040): E <- AC(15) <- AC(14) <- ... <- AC(0) <- E (rotate left)
+
+No bit is lost, so a CIR followed by a CIL restores the original AC and E. In CPU Sim each rotation uses a 1-bit scratch register TMP: the bit leaving AC is saved in TMP, AC is shifted, the old E enters the vacated bit, and TMP is copied into E.
+
+## Program
+
+```
+; ==============================================================
+; Practical 9 : Register-reference instructions CIR, CIL
+; Machine : BasicComputer.cpu (Mano's Basic Computer)
+; CIR : circulate E and AC right (E -> AC(15), AC(0) -> E)
+; CIL : circulate E and AC left (AC(15) -> E, E -> AC(0))
+; ==============================================================
+ LDA NUM ; set-up: AC <- 9 = 0000 0000 0000 1001, E = 0
+ CIR ; 7080 : AC = 0000 0000 0000 0100 (4), E = 1
+ CIR ; 7080 : AC = 1000 0000 0000 0010 (-32766), E = 0
+ CIL ; 7040 : AC = 0000 0000 0000 0100 (4), E = 1
+ CIL ; 7040 : AC = 0000 0000 0000 1001 (9), E = 0
+ HLT
+NUM: .data 1 9
+```
+
+## After assembling and loading
+
+<img width="1917" height="1198" alt="image" src="https://github.com/user-attachments/assets/5e0b11f0-0605-4f6c-b7b6-6120286f7675" />
+
+## After step 1:
+
+<img width="1387" height="745" alt="image" src="https://github.com/user-attachments/assets/8caf4fb6-6dd3-4106-a1fb-d0d109b8149f" />
+
+## After step 2:
+
+<img width="862" height="772" alt="image" src="https://github.com/user-attachments/assets/b362e353-50da-4f90-bad5-16e5b5a2aa2d" />
+
+## After step 3:
+
+<img width="770" height="698" alt="image" src="https://github.com/user-attachments/assets/cc38641a-6eec-4105-88cb-74f94ea83868" />
+
+## After step 4:
+
+<img width="751" height="606" alt="image" src="https://github.com/user-attachments/assets/50a6a32a-3026-4469-ade1-8280c68daf4b" />
+
+## After step 5:
+
+<img width="796" height="753" alt="image" src="https://github.com/user-attachments/assets/012c43df-e67b-4833-b5a5-aa69fd2daaeb" />
+
+## After step 6:
+
+<img width="773" height="893" alt="image" src="https://github.com/user-attachments/assets/79c61be4-8bae-49ea-83b5-f5b11dc72227" />
+
+
+## Result
+
+| Step | PC before | Instruction | IR (hex) | AC | E | PC | AR | IR (dec) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 | 0 | LDA NUM | 2006 | 9 | 0 | 1 | 6 | 8198 |
+| 2 | 1 | CIR | 7080 | 4 | 1 | 2 | 128 | 28800 |
+| 3 | 2 | CIR | 7080 | 32770 (-32766) | 0 | 3 | 128 | 28800 |
+| 4 | 3 | CIL | 7040 | 4 | 1 | 4 | 64 | 28736 |
+| 5 | 4 | CIL | 7040 | 9 | 0 | 5 | 64 | 28736 |
+| 6 | 5 | HLT | 7001 | 9 | 0 | 6 | 1 | 28673 |
+
+CIR and CIL were simulated; two right rotations followed by two left rotations restored AC = 9. After execution: AC = 9, E = 0, PC = 6, AR = 1, IR = 28673. After each individual instruction the values are as in the table above.
+
+# Practical 10: Sum of Integers until a Negative Number is Read
+
+Aim-> To write an assembly program that reads integers and adds them until a negative non-zero number is read, then outputs the sum (not including the last number).
+Tool-> CPU Sim 4.0.11 (Java 8 with JavaFX)
+
+## Theory
+
+This is a sentinel-controlled loop: the negative number marks the end of the data. After each INP, SPA skips the exit branch when AC ≥ 0; for a negative number the skip does not happen and BUN DONE leaves the loop before the number is added. Zero counts as non-negative, so it is added (it does not change the sum).
+
+## Program
+
+```
+; ==============================================================
+; Practical 10 : Read integers and add them until a negative
+; non-zero number is read; output the sum
+; (the negative number is NOT included).
+; Machine : BasicComputer.cpu (Mano's Basic Computer)
+; ==============================================================
+LOOP: INP ; AC <- next number
+ SPA ; if AC >= 0 skip the exit branch
+ BUN DONE ; AC < 0 : leave the loop
+ ADD SUM ; AC <- AC + SUM
+ STA SUM ; SUM <- AC
+ BUN LOOP ; read the next number
+DONE: LDA SUM ; AC <- SUM
+ OUT ; display the sum
+ HLT
+SUM: .data 1 0 ; running total
+```
+## After assembling and loading the program
+
+<img width="1917" height="1177" alt="image" src="https://github.com/user-attachments/assets/0537e34d-1a88-4eea-8971-e2e64fa71ae0" />
+
+## Output after running the program and giving inputs 4, 10, 0, 6 and finally -3
+
+<img width="723" height="441" alt="image" src="https://github.com/user-attachments/assets/4b563a28-5e67-4dfa-9cde-f5de113c212f" />
+
+## Result
+The program successfully keeps running until a negative input is given, in the case above, The program adds integers until a negative number is read and displays the sum excluding it: 4 + 10 + 0 + 6 = 20.
+
+# Practical 11: Sum of Integers until Zero is Read
+
+Aim-> To write an assembly program that reads integers and adds them until zero is read, then outputs the sum.
+Tool-> CPU Sim 4.0.11 (Java 8 with JavaFX)
+
+## Theory
+Here the sentinel is 0. SZA skips the next instruction when AC = 0. Because a skip can only jump over one instruction, two branches are used: when AC ≠ 0 the BUN ADDIT executes and the number is added; when AC = 0 that branch is skipped and BUN DONE ends the loop. Negative numbers are added normally.
+
+## Program
+```
+; ==============================================================
+; Practical 11 : Read integers and add them until zero is read;
+; then output the sum.
+; Machine : BasicComputer.cpu (Mano's Basic Computer)
+; ==============================================================
+LOOP: INP ; AC <- next number
+ SZA ; if AC != 0 do not skip ...
+ BUN ADDIT ; ... so go and add it
+ BUN DONE ; AC = 0 (BUN ADDIT was skipped) : finish
+ADDIT: ADD SUM ; AC <- AC + SUM
+ STA SUM ; SUM <- AC
+ BUN LOOP ; read the next number
+DONE: LDA SUM ; AC <- SUM
+ OUT ; display the sum
+ HLT
+SUM: .data 1 0 ; running total
+```
+
+## After assembling and loading the program
+<img width="1917" height="1198" alt="image" src="https://github.com/user-attachments/assets/1da540a1-ccaa-4a57-9d1a-372e48cb7087" />
+
+## Output after running the program and giving inputs 8, 12, -5 and finally 0
+
+<img width="902" height="552" alt="image" src="https://github.com/user-attachments/assets/d895241e-7faa-4a3d-87fd-1c04a7e8e2e7" />
+
+## Result
+The program successfully keeps running until 0 is given as input, in the case above, The program adds integers until 0 is read and displays the sum: 8 + 12 + (−5) = 15.
+
