@@ -1,4 +1,4 @@
-# CSA CPUSim Practical
+<img width="993" height="507" alt="image" src="https://github.com/user-attachments/assets/010a2a05-89e7-4578-8bd9-c8bff0b2e701" /># CSA CPUSim Practical
 # Practical 1: Create a Machine (Basic Computer Architecture)
 Aim-> To create, in CPU Sim, a machine based on the Basic Computer architecture: its registers,
 memory, microinstructions, instruction fields and machine instructions.
@@ -157,3 +157,28 @@ Tool-> CPU Sim 4.0.11 (Java 8 with JavaFX)
 
 INP reads an integer into AC. STA A saves it in memory because the next INP overwrites AC. ADD A is a memory-reference instruction: DR ← M[A], then AC ← AC + DR and the carry out of bit 15 goes to E. OUT displays AC and HLT stops the machine.
 Numbers are 16-bit two's complement, so the range is −32768 to +32767
+
+The program that we will be using:
+<img width="993" height="507" alt="image" src="https://github.com/user-attachments/assets/fdb4a801-9370-4fe3-a389-042dff11180d" />
+
+## After assembling and loading (Ctrl+2)
+
+<img width="1917" height="1198" alt="image" src="https://github.com/user-attachments/assets/7b4a6cf8-a7ba-499c-a64e-ff0acdf40b99" />
+
+
+Changed IR(0-11)->AR to srcStartBit = 0 and destStartBit = 0 so CPU Sim maps the address correctly to RAM instead of shifting it
+
+## After running
+<img width="602" height="330" alt="image" src="https://github.com/user-attachments/assets/5be2533e-20b5-4c67-8b65-9ddc2de4f25b" />
+
+After giving first input:
+
+<img width="527" height="117" alt="image" src="https://github.com/user-attachments/assets/f3bb31c8-f6db-446c-a4f9-735debb6bf70" />
+
+After giving second input:
+
+<img width="690" height="178" alt="image" src="https://github.com/user-attachments/assets/e740f7a3-b426-45bb-a2d9-c19f03bb81db" />
+
+## Result
+
+The output is correct, program takes the input, stores the input, adds the numbers and displays the sum correctly. 
