@@ -18,19 +18,22 @@ A CPU Sim machine is described at the register-transfer level by four kinds of o
 
 A control unit that runs a stored list of microinstructions for each instruction is a microprogrammed control
 unit, which is exactly what CPU Sim simulates.
-## Creating a new machine
+## Creating a new machine:
 
 <img width="590" height="400" alt="image" src="https://github.com/user-attachments/assets/e0ab6717-b7ce-4161-aac1-74781c734f67" />
 
 
 
-## Creating the registers
+## Creating the registers:
+
 <img width="1462" height="936" alt="image" src="https://github.com/user-attachments/assets/548a15f5-d2a9-4648-aa7b-833c1d97fbe4" />
 
-## Creating the Condition Bits
+## Creating the Condition Bits:
+
 <img width="997" height="897" alt="image" src="https://github.com/user-attachments/assets/54da6f2e-e271-4793-9b71-35b9c553cc29" />
 
-## Creating the RAM
+## Creating the RAM:
+
 <img width="1241" height="1061" alt="image" src="https://github.com/user-attachments/assets/5b042690-8d35-4ee9-b444-90ad9aba9b7f" />
 
 ## Creating the microinstructions
@@ -78,22 +81,27 @@ unit, which is exactly what CPU Sim simulates.
 
 <img width="1291" height="885" alt="image" src="https://github.com/user-attachments/assets/4dffeffc-2e1a-4ce9-9774-68e3390d300c" />
 
-## Creating the instruction field
+## Creating the instruction field:
 
 <img width="998" height="845" alt="image" src="https://github.com/user-attachments/assets/eee23375-9dcd-4a88-9a8b-94f71e354952" />
 
-## Creating the machine instructions
+## Creating the machine instructions:
 
 <img width="1528" height="1008" alt="image" src="https://github.com/user-attachments/assets/e253f9e5-89b9-421e-98a0-cb4b295eeb12" />
 <img width="1055" height="881" alt="image" src="https://github.com/user-attachments/assets/145e1ada-38cb-4ab4-b818-77a63ec865e8" />
 
-## Execute sequence of ADD
+## Execute sequence of ADD:
 
 <img width="1156" height="912" alt="image" src="https://github.com/user-attachments/assets/cb7b0032-460d-4279-9289-a2fc71d2e3d0" />
 
-## Execute sequence of ISZ
+## Execute sequence of ISZ:
 
 <img width="1035" height="883" alt="image" src="https://github.com/user-attachments/assets/5b6ad727-8824-4568-9b10-23eaa8b1c532" />
+
+## Result:
+
+A machine based on the Basic Computer architecture was created in CPU Sim and saved as
+BasicComputer.cpu
  
 Now, we will move onto practical 2, in which there is creation of Fetch sequence, program counter and saving and after that our basic computer will be completed and we can save our machine as BasicComputer.cpu
 
@@ -104,6 +112,48 @@ Tool->  CPU Sim 4.0.11 (Java 8 with JavaFX)
 ## Theory
 Every instruction cycle begins with the same fetch and decode phase. In Mano's Basic Computer it takes
 three clock pulses, controlled by the sequence counter outputs T0, T1 and T2
->T0 : AR <- PC
->T1 : IR <- M[AR], PC <- PC + 1
->T2 : D0 ... D7 <- Decode IR(12-14), AR <- IR(0-11), I <- IR(15)
+```
+T0 : AR <- PC
+T1 : IR <- M[AR], PC <- PC + 1
+T2 : D0 ... D7 <- Decode IR(12-14), AR <- IR(0-11), I <- IR(15)
+```
+## Creating fetch sequence instructions:
+
+<img width="1217" height="988" alt="image" src="https://github.com/user-attachments/assets/e1e1689f-7e73-459a-a98c-3780d58a7037" />
+
+## Testing the routine:
+
+We have opened P03_ADD.a file in CPUSim and set the format of registers to unsigned Dec
+
+<img width="1896" height="1176" alt="image" src="https://github.com/user-attachments/assets/448e0a0a-7337-4379-a1f8-0cef16c06856" />
+
+Now, we will click step by micro 5 times to see the register changed by each instruction
+## After clicking step by micro 5  times:
+
+<img width="1917" height="1198" alt="image" src="https://github.com/user-attachments/assets/0c0408bd-8604-468f-9469-ccd980f477c9" />
+
+## Result:
+
+### Observations Table
+
+| Micro-step | Microinstruction | AR | PC | IR |
+| :--- | :--- | :--- | :--- | :--- |
+| **start** | -- | 0 | 0 | 0 |
+| **1** | `PC->AR` | 0 | 0 | 0 |
+| **2** | `M[AR]->IR` | 0 | 0 | 63488 (F800) |
+| **3** | `PC+1->PC` | 0 | 1 | 63488 |
+| **4** | `IR(0-11)->AR` | 2048 (800) | 1 | 63488 |
+| **5** | `decode-IR` | 2048 | 1 | 63488 -> INP |
+
+The fetch routine PC->AR, M[AR]->IR, PC+1->PC, IR(0-11)->AR, decode-IR was created and
+verified by single-stepping the first instruction of a program.
+
+# Practical 3: ADD Operation on Two User-entered Numbers
+
+Aim-> To write an assembly program that reads two numbers entered by the user, adds them and displays the sum.
+Tool-> CPU Sim 4.0.11 (Java 8 with JavaFX)
+
+## Theory
+
+INP reads an integer into AC. STA A saves it in memory because the next INP overwrites AC. ADD A is a memory-reference instruction: DR ← M[A], then AC ← AC + DR and the carry out of bit 15 goes to E. OUT displays AC and HLT stops the machine.
+Numbers are 16-bit two's complement, so the range is −32768 to +32767
