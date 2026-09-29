@@ -430,3 +430,74 @@ The memory-reference instructions were simulated: LDA, ADD and STA computed the 
 Final AC = PROD = 15.
 
 # Practical 7: Register-reference Instructions: CLA, CMA, CME, HLT
+
+Aim-> To simulate the register-reference instructions CLA, CMA, CME and HLT and determine AC, E, PC, AR and IR in decimal after execution.
+Tool-> CPU Sim 4.0.11 (Java 8 with JavaFX)
+
+## Theory
+Register-reference instructions have the code 7xxx: opcode 111 with I = 0. The low 12 bits select one operation on AC or E, executed at T3, with no memory access. Because the fetch routine always performs AR ← IR(0–11), AR ends up holding the low 12 bits of the instruction code (for example 800 hex = 2048 for CLA).
+
+## Program
+```
+; ==============================================================
+; Practical 7 : Register-reference instructions CLA, CMA, CME, HLT
+; Machine : BasicComputer.cpu (Mano's Basic Computer)
+; Observe AC, E, PC, AR and IR (Decimal) after every instruction.
+; ==============================================================
+ LDA NUM ; set-up: AC <- 25 so that CLA has something to clear
+ CLA ; 7800 : AC <- 0
+ CMA ; 7200 : AC <- AC' (0000 -> FFFF = -1)
+ CME ; 7100 : E <- E' (0 -> 1)
+ HLT ; 7001 : S <- 1 (halt)
+NUM: .data 1 25
+```
+
+## After assembling and loading the program
+
+<img width="1917" height="1198" alt="image" src="https://github.com/user-attachments/assets/830021b2-41f1-4d26-9ef7-1312080ddd7f" />
+
+## After step 1:
+
+<img width="683" height="643" alt="image" src="https://github.com/user-attachments/assets/9e7618fe-6fec-49a9-b2dd-52e7d27366d0" />
+
+## After step 2:
+
+<img width="928" height="717" alt="image" src="https://github.com/user-attachments/assets/3da36a06-1b92-4ae3-8beb-d46ed686c269" />
+
+## After step 3:
+
+<img width="895" height="771" alt="image" src="https://github.com/user-attachments/assets/999f3c61-f13f-4808-a2d3-9d786ec4bf0b" />
+
+## After step 4:
+
+<img width="1076" height="840" alt="image" src="https://github.com/user-attachments/assets/23916546-dff6-44bb-8c2e-87619a300005" />
+
+## After step 5:
+
+<img width="722" height="985" alt="image" src="https://github.com/user-attachments/assets/2860b3ac-d662-4212-a9e8-911074e12270" />
+
+## Result
+
+**Register contents (decimal) after each instruction**
+
+| Step | PC before | Instruction | IR (hex) | AC | E | PC | AR | IR (dec) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 | 0 | LDA NUM | 2005 | 25 | 0 | 1 | 5 | 8197 |
+| 2 | 1 | CLA | 7800 | 0 | 0 | 2 | 2048 | 30720 |
+| 3 | 2 | CMA | 7200 | 65535 (-1) | 0 | 3 | 512 | 29184 |
+| 4 | 3 | CME | 7100 | 65535 (-1) | 1 | 4 | 256 | 28928 |
+| 5 | 4 | HLT | 7001 | 65535 (-1) | 1 | 5 | 1 | 28673 |
+
+**Final register contents after HLT**
+
+| Register | Decimal | Hex | Explanation |
+| :--- | :--- | :--- | :--- |
+| AC | 65535 (signed -1) | FFFF | CLA cleared it, CMA complemented all bits |
+| E | 1 | 1 | CME complemented E from 0 to 1 |
+| PC | 5 | 005 | Address after HLT (HLT is at address 4) |
+| AR | 1 | 001 | IR(0–11) of HLT = 001 |
+| IR | 28673 | 7001 | Code of HLT |
+
+After execution: AC = 65535 (−1), E = 1, PC = 5, AR = 1, IR = 28673.
+
+# Practical 8: Register-reference Instructions: INC, SPA, SNA, SZE
